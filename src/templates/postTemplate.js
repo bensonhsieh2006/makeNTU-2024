@@ -64,7 +64,8 @@ export const query = graphql`
   }
 `;
 
-export default function PostTemplate({ data }) {
+export default function PostTemplate({ data, pageContext }) {
+  const { layoutSlug } = pageContext;
   const post = data.contentfulPost;
   const title = post.title;
   const description = post.description.description;
@@ -143,11 +144,11 @@ export default function PostTemplate({ data }) {
   };
 
   return (
-    <Layout menus={null} back={true}>
+    <Layout menus={null} back={true} backSlug={layoutSlug}>
       <SEO
         title={title}
         description={description}
-        url={process.env.SITE_URL + `post/` + post.slug}
+        url={process.env.SITE_URL + ((layoutSlug === "post") ? `post/${post.slug}` : `company_intro/${layoutSlug}/${post.slug}`)}
       />
       <div>
         <div

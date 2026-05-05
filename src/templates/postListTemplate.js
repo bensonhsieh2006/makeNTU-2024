@@ -32,6 +32,7 @@ export const query = graphql`
     ) {
       edges {
         node {
+          name
           posts {
             id
             slug
@@ -55,18 +56,19 @@ export const query = graphql`
 `;
 
 export default function PostListTemplate({ data, pageContext }) {
-  const { currentPage, numPages, limit, skip } = pageContext;
+  const { currentPage, numPages, limit, skip, slug, backSlug } = pageContext;
   const title = data.contentfulLayout.title;
   const description = data.contentfulLayout.description;
   const menus = data.contentfulLayout.menu;
-  // console.log(data.allContentfulLayoutPosts);
+  const postEdge = data.allContentfulLayoutAllPosts.edges.find((edge) => edge.node.name === slug);
+  const posts = postEdge.node.posts;
 
   return (
-    <Layout menus={menus} back={true}>
+    <Layout menus={menus} back={true} backSlug={backSlug}>
       <SEO
         title={title}
         description={description}
-        url={process.env.SITE_URL + `post`}
+        url={process.env.SITE_URL + ((slug === "post") ? `${slug}` : `company_intro/${slug}`)}
       />
       <section id="posts" className="posts section pt-5">
         <div className="container mx-auto" style={{ maxWidth: "1000px" }}>
@@ -83,18 +85,18 @@ export default function PostListTemplate({ data, pageContext }) {
             data-sal="fade"
             data-sal-easing="ease-in-cubic"
           >
-            所有貼文{" "}
+            {`${title}`}{" "}
             <span style={{ fontWeight: 500, color: "gray", fontSize: 20 }}>
-              — {data.allContentfulLayoutAllPosts.edges[0].node.posts.length}{" "}
+              — {posts.length}{" "}
               Posts
             </span>
           </h2>
           <hr></hr>
           <ul style={{ minHeight: 150, marginBottom: "130px" }}>
-            {data.allContentfulLayoutAllPosts.edges[0].node.posts
+            {posts
               .slice(skip, skip + limit)
               .map((node) => (
-                <Link to={`/post/${node.slug}`}>
+                <Link to={(slug === "post") ? `/${slug}/${node.slug}` : `/company_intro/${slug}/${node.slug}`}>
                   <li
                     className="postlist"
                     key={node.slug}
@@ -134,7 +136,7 @@ export default function PostListTemplate({ data, pageContext }) {
             {Array.from({ length: numPages }, (_, i) => (
               <Link
                 key={`pagination-number${i + 1}`}
-                to={i === 0 ? "/post" : `/post/${i + 1}`}
+                to={i === 0 ? `/${slug}` : `/${slug}/${i + 1}`}
               >
                 <div
                   class={i + 1 === currentPage ? "index index-active" : "index"}

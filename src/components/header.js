@@ -2,7 +2,7 @@ import { useStaticQuery, Link, graphql, navigate } from "gatsby";
 import React, { useEffect } from "react";
 import PropTypes from "prop-types";
 
-const Header = ({ menus, back }) => {
+const Header = ({ menus, back, backSlug }) => {
   const sQData = useStaticQuery(graphql`
     query {
       allContentfulLayoutHeader {
@@ -70,10 +70,19 @@ const Header = ({ menus, back }) => {
           style={{ fontSize: 45 }}
           onClick={() => {
             // console.log(window.location.pathname);
-            if (window.location.pathname === "/post") {
-              navigate("/");
-            } else {
+            if (window.location.pathname.startsWith("/post/")  
+            ) {
               navigate("/post");
+            } else if (window.location.pathname.startsWith("/company_intro/")
+            ) {
+              if (backSlug !== "company_intro"){
+                navigate(`/company_intro/${backSlug}`);
+              }
+              else{
+                navigate("/company_intro");
+              }
+            } else {
+              navigate("/");
             }
           }}
         >

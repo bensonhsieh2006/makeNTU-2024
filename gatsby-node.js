@@ -11,12 +11,18 @@ exports.createPages = ({ graphql, actions }) => {
         edges {
           node {
             slug
+            menu {
+              menuItems {
+                url
+              }
+            }
           }
         }
       }
       allContentfulLayoutAllPosts {
         edges {
           node {
+            name
             posts {
               title
               slug
@@ -39,11 +45,13 @@ exports.createPages = ({ graphql, actions }) => {
           component: layoutTemplate,
           context: {
             slug: edge.node.slug,
+            back: false,
           },
         });
       } else if (edge.node.slug === "post") {
-        const posts =
-          result.data.allContentfulLayoutAllPosts.edges[0].node.posts;
+        const postEdge =
+          result.data.allContentfulLayoutAllPosts.edges.find((edge) => edge.node.name == "post");
+        const posts = postEdge.node.posts;
         const postsPerPage = 5;
         const numPages = Math.ceil(posts.length / postsPerPage);
         Array.from({ length: numPages }).forEach((_, i) => {
@@ -59,10 +67,57 @@ exports.createPages = ({ graphql, actions }) => {
             },
           });
         });
-      }
+      } else if (edge.node.slug === "company_intro") {
+        createPage({
+          path: edge.node.slug,
+          component: layoutTemplate,
+          context:{
+            slug: edge.node.slug,
+            back: true,
+          }
+        });
+
+        const companyMenuItems = edge.node.menu[0].menuItems;
+        companyMenuItems.forEach((menuItem) => {
+          const companySlug = menuItem.url;
+          const companyEdge = result.data.allContentfulLayoutAllPosts.edges.find((edge) => edge.node.name == companySlug);
+          const posts = companyEdge.node.posts;
+          const postsPerPage = 5;
+          const numPages = Math.ceil(posts.length / postsPerPage);
+
+          Array.from({ length: numPages }).forEach((_, i) => {
+            createPage({
+              path: i === 0 ? `/company_intro/${companySlug}` : `/company_intro/${companySlug}/${i + 1}`,
+              component: postListTemplate,
+              context: {
+                backSlug: "company_intro",
+                slug: companySlug,
+                limit: postsPerPage,
+                skip: i * postsPerPage,
+                numPages,
+                currentPage: i + 1,
+              },
+            })
+          });
+
+          posts.forEach(
+            (post) => {
+              createPage({
+                path: `/company_intro/${companySlug}/${post.slug}`,
+                component: postTemplate,
+                context: {
+                  slug: post.slug,
+                  layoutSlug: companySlug,
+                },
+              });
+            }
+          );
+        })
+      };
     });
 
-    result.data.allContentfulLayoutAllPosts.edges[0].node.posts.forEach(
+    postEdge = result.data.allContentfulLayoutAllPosts.edges.find((edge) => edge.node.name == "post");
+    postEdge.node.posts.forEach(
       (post) => {
         createPage({
           path: `/post/${post.slug}`,
@@ -74,5 +129,7 @@ exports.createPages = ({ graphql, actions }) => {
         });
       }
     );
+
+    
   });
 };

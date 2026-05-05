@@ -31,15 +31,16 @@ export const query = graphql`
   }
 `;
 
-export default function PageTemplate({ data }) {
+export default function PageTemplate({ data, pageContext }) {
+  const { slug, back } = pageContext;
   const title = data.contentfulLayout.title;
   const description = data.contentfulLayout.description;
   const menus = data.contentfulLayout.menu;
   const contentModule = data.contentfulLayout.contentModule;
 
   return (
-    <Layout menus={menus}>
-      <SEO title={title} description={description} url={process.env.SITE_URL} />
+    <Layout menus={menus} back={back} backSlug={slug}>
+      <SEO title={title} description={description} url={process.env.SITE_URL + ((slug === "/") ? "" : slug)} />
       {contentModule &&
         contentModule.length > 0 &&
         contentModule.map((content) => (

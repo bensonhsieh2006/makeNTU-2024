@@ -5,8 +5,9 @@ import sal from "sal.js";
 
 import Header from "./header";
 import Footer from "./footer";
+import CompanyIntro from "./companyintro.js"
 
-const Layout = ({ children, menus, back }) => {
+const Layout = ({ children, menus, back, backSlug }) => {
   const data = useStaticQuery(graphql`
     query SiteTitleQuery {
       site {
@@ -25,8 +26,9 @@ const Layout = ({ children, menus, back }) => {
   return (
     <div className="wrapper overflow-hidden">
       <h1 className="hidden">{data.site.siteMetadata.title}</h1>
-      <Header menus={menus} back={back} />
+      <Header menus={menus} back={back} backSlug={backSlug}/>
       <div>{children}</div>
+      <CompanyIntro menus={menus}/>
       <Footer menus={menus} />
     </div>
   );
